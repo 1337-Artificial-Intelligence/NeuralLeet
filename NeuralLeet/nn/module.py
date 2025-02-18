@@ -2,14 +2,14 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 class Neuron:
-    """Base class for neural network components."""
+    """Base class for neuron network components."""
     
     def __init__(self) -> None:
         """Initialize a new Neuron instance."""
         pass
 
 class Layer(Neuron, ABC):
-    """Abstract base class for all neural network layers."""
+    """Abstract base class for layers."""
 
     def __init__(self) -> None:
         """Initialize a new Layer instance."""
