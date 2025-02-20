@@ -55,4 +55,3 @@ class NeuralNetwork(Layer, ABC):
         self.output_size = output_size
         self.learning_rate = learning_rate
         self.batch_size = batch_size
-
