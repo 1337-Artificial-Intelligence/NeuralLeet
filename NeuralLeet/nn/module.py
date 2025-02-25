@@ -52,6 +52,14 @@ class NeuralNetwork(ABC):
                 The learning rate of the neural network.
             - batch_size: int
                 The batch size of the neural network.
+            - epochs: int
+                The number of epochs to train the neural network.
+            - layer_type: Layer
+                The type of layer to use in the neural network it should inherit from the Layer class.
+            - h_activation: callable
+                The activation function for the hidden layers.
+            - o_activation: callable
+                The activation function for the output layer.
         Returns:
             None
     '''
@@ -60,7 +68,7 @@ class NeuralNetwork(ABC):
         self, num_hidden_layers: int, num_neurons_hidden: int,
         input_size: int, output_size: int,
             learning_rate: float, batch_size: int, epochs: int,
-            layer_type: Layer = Layer
+            layer_type: Layer, h_activation: callable, o_activation: callable
     ) -> None:
 
         self.num_of_hidden_layers = num_hidden_layers
@@ -71,6 +79,9 @@ class NeuralNetwork(ABC):
         self.batch_size = batch_size
         self.epochs = epochs
         self.layers = []
+        self.h_activation = h_activation
+        self.o_activation = o_activation
+
         for i in range(num_hidden_layers):
             if i == 0:
                 self.layers.append(layer_type(num_neurons_hidden, input_size))
@@ -91,10 +102,18 @@ class NeuralNetwork(ABC):
                 None
         '''
 
-        # todo add debugging print statements for ech epoch
+        # todo add debugging print statements for each epoch
         for epoch in range(self.epochs):
             for i in range(0, len(x), self.batch_size):
                 x_batch = x[i:i + self.batch_size]
                 y_batch = y[i:i + self.batch_size]
-                for layer in self.layers:
+                # ? I didn't include the last layer in the loop because it has a different activation function
+                for l in range(self.num_of_hidden_layers):
+                    layer = self.layers[l]
                     x_batch = layer.forward(x_batch)
+                    # ? Apply the activation function to each element in the batch
+                    x_batch = np.vectorize(self.h_activation)(x_batch)
+                # ? The last layer
+                layer = self.layers[-1] #! this is not the best approach to handle the last layer, (O)n 
+                x_batch = layer.forward(x_batch)
+                x_batch = np.vectorize(self.o_activation)(x_batch)
