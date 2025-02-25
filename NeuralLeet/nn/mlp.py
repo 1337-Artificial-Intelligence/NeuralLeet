@@ -40,21 +40,39 @@ class MlpLayer(Layer):
 
 
 class Mlp(NeuralNetwork):
+    '''
+    Multi-layer perceptron class, inherits from the NeuralNetwork class.
+    Parameters:
+        - num_hidden_layers: int
+            The number of layers in the neural network.
+        - num_neurons_hidden: int
+            The number of neurons in each hidden layer.
+        - input_size: int
+            The size of the input layer.
+        - output_size: int
+            The size of the output layer.
+        - learning_rate: float
+            The learning rate of the neural network.
+        - batch_size: int
+            The batch size of the neural network.
+        - epochs: int
+            The number of epochs to train the neural network.
+        - h_activation: callable
+            The activation function for the hidden layers.
+        - o_activation: callable
+            The activation function for the output layer
+    '''
+
     def __init__(
             self, num_hidden_layers: int,
             num_neurons_hidden: int, input_size: int,
+            h_activation: callable, o_activation: callable,
             output_size: int, learning_rate: float = 0.01,
-            batch_size: int = 128, epochs: int = 100) -> None:
+            batch_size: int = 128, epochs: int = 100,
+    ) -> None:
 
         # * Initialize the parent class NeuralNetwork
         super(Mlp, self).__init__(num_hidden_layers, num_neurons_hidden,
                                   input_size, output_size,
-                                  learning_rate, batch_size, epochs, MlpLayer)
-    # * Override the forward method
-
-    def forward(self, x: np.ndarray):
-        pass
-
-    # * Override the backward method
-    def backward(self, grad_output: np.ndarray):
-        pass
+                                  learning_rate, batch_size, epochs, MlpLayer,
+                                  h_activation, o_activation)
