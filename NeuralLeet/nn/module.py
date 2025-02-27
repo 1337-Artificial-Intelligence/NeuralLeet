@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-
+from ..core.functional import log_loss
 
 class Neuron:
 
@@ -107,13 +107,31 @@ class NeuralNetwork(ABC):
             for i in range(0, len(x), self.batch_size):
                 x_batch = x[i:i + self.batch_size]
                 y_batch = y[i:i + self.batch_size]
+                predicted_batch = None
                 # ? I didn't include the last layer in the loop because it has a different activation function
                 for l in range(self.num_of_hidden_layers):
                     layer = self.layers[l]
                     x_batch = layer.forward(x_batch)
-                    # ? Apply the activation function to each element in the batch
-                    x_batch = np.vectorize(self.h_activation)(x_batch)
+                    x_batch = np.array([self.h_activation(x) for x in x_batch])
+                
                 # ? The last layer
                 layer = self.layers[-1] #! this is not the best approach to handle the last layer, (O)n 
-                x_batch = layer.forward(x_batch)
-                x_batch = np.vectorize(self.o_activation)(x_batch)
+                predicted_batch = layer.forward(x_batch)
+                predicted_batch = np.array([self.o_activation(x) for x in predicted_batch])
+                # ? Cost
+                cost = sum([log_loss(predicted_batch[i], y_batch[i]) for i in range(len(y_batch) )])/len(y_batch)
+                print(f'Epoch: {epoch}, Cost: {cost}')
+
+                #? back-propagation
+                for l in range(self.num_of_hidden_layers, 0, -1):
+                    layer = self.layers[l]
+                    predicted_batch = layer.backward(predicted_batch)
+                    predicted_batch = np.array([self.h_activation(x) for x in predicted_batch])
+
+
+    # #? Error derivatives
+    # errors_o_d = [[(p - t) for p, t in zip(act_o[i], targets[i])] for i in range(len(act_o))]
+    # w_h_o_T = list(zip(*w_h_o))
+
+                
+
