@@ -1,13 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from ..core.functional import log_loss
 
-class Neuron:
-
-    def __init__(self, num_inputs: int):
-        self.num_inputs = num_inputs
-        self.weights = np.random.randn(num_inputs)
-        self.bias = 0
+from ..core.functional import activation_functions
 
 
 class Layer(ABC):
@@ -18,14 +12,30 @@ class Layer(ABC):
                 The number of neurons in the layer.
             - num_inputs: int
                 The number of inputs to the each neuron in the current layer.
+            - activation_function: callable
+                The activation function to use for the layer
+            - activation_function_derivative: callable
+                The derivative of the activation function
+            - learning_rate: float
+                The learning rate of the neural network.
+            - is_output_layer: bool
+                A flag to indicate if the layer is the output
         Returns:
             None
     '''
 
-    def __init__(self, num_neurons: int, num_inputs: int) -> None:
+    def __init__(self, num_neurons: int, num_inputs: int, activation_function: callable,
+                 activation_function_derivative: callable, learning_rate: float,
+                 is_output_layer: bool = False
+                 ) -> None:
         self.num_neurons = num_neurons
         self.num_inputs = num_inputs
-        self.neurons = [Neuron(self.num_inputs) for _ in range(num_neurons)]
+        self.weights = np.random.randn(num_neurons, num_inputs) * 0.01
+        self.bias = np.zeros((num_neurons, 1))
+        self.activation_function = activation_function
+        self.is_output_layer = is_output_layer
+        self.activation_function_derivative = activation_function_derivative
+        self.learning_rate = learning_rate
 
     @abstractmethod
     def forward(self, x_batch: np.ndarray) -> np.ndarray:
@@ -56,10 +66,12 @@ class NeuralNetwork(ABC):
                 The number of epochs to train the neural network.
             - layer_type: Layer
                 The type of layer to use in the neural network it should inherit from the Layer class.
-            - h_activation: callable
+            - h_activation: str
                 The activation function for the hidden layers.
-            - o_activation: callable
+            - o_activation: str
                 The activation function for the output layer.
+            - loss: callable
+                The loss function to use for training the neural network.
         Returns:
             None
     '''
@@ -67,10 +79,10 @@ class NeuralNetwork(ABC):
     def __init__(
         self, num_hidden_layers: int, num_neurons_hidden: int,
         input_size: int, output_size: int,
-            learning_rate: float, batch_size: int, epochs: int,
-            layer_type: Layer, h_activation: callable, o_activation: callable
+        learning_rate: float, batch_size: int, epochs: int,
+        layer_type: Layer, h_activation: str,
+        o_activation: str, loss: callable
     ) -> None:
-
         self.num_of_hidden_layers = num_hidden_layers
         self.num_neurons_hidden = num_neurons_hidden
         self.input_size = input_size
@@ -79,59 +91,43 @@ class NeuralNetwork(ABC):
         self.batch_size = batch_size
         self.epochs = epochs
         self.layers = []
-        self.h_activation = h_activation
-        self.o_activation = o_activation
+        self.h_activation, self.h_activation_derivative = activation_functions[h_activation]
+        self.o_activation, self.o_activation_derivative = activation_functions[o_activation]
+        self.loss = loss
 
         for i in range(num_hidden_layers):
             if i == 0:
-                self.layers.append(layer_type(num_neurons_hidden, input_size))
+                self.layers.append(layer_type(
+                    num_neurons_hidden, input_size, self.h_activation, self.h_activation_derivative, learning_rate))
             else:
-                self.layers.append(
-                    layer_type(num_neurons_hidden, num_neurons_hidden))
-        self.layers.append(layer_type(output_size, num_neurons_hidden))
+                self.layers.append(layer_type(
+                    num_neurons_hidden, num_neurons_hidden, self.h_activation, self.h_activation_derivative, learning_rate))
+        self.layers.append(layer_type(
+            output_size, num_neurons_hidden, self.o_activation, self.o_activation_derivative, learning_rate, is_output_layer=True))
 
+    @abstractmethod
     def train(self, x: np.ndarray, y: np.ndarray) -> None:
-        '''
+        ''''
             Train the neural network model.
             Parameters:
                 - x: np.ndarray
-                    The input data.
+                    The input data to the neural network.
                 - y: np.ndarray
-                    The target data.
+                    The target values for the input data.
             Returns:
                 None
         '''
-
-        # todo add debugging print statements for each epoch
-        for epoch in range(self.epochs):
-            for i in range(0, len(x), self.batch_size):
-                x_batch = x[i:i + self.batch_size]
-                y_batch = y[i:i + self.batch_size]
-                predicted_batch = None
-                # ? I didn't include the last layer in the loop because it has a different activation function
-                for l in range(self.num_of_hidden_layers):
-                    layer = self.layers[l]
-                    x_batch = layer.forward(x_batch)
-                    x_batch = np.array([self.h_activation(x) for x in x_batch])
-                
-                # ? The last layer
-                layer = self.layers[-1] #! this is not the best approach to handle the last layer, (O)n 
-                predicted_batch = layer.forward(x_batch)
-                predicted_batch = np.array([self.o_activation(x) for x in predicted_batch])
-                # ? Cost
-                cost = sum([log_loss(predicted_batch[i], y_batch[i]) for i in range(len(y_batch) )])/len(y_batch)
-                print(f'Epoch: {epoch}, Cost: {cost}')
-
-                #? back-propagation
-                for l in range(self.num_of_hidden_layers, 0, -1):
-                    layer = self.layers[l]
-                    predicted_batch = layer.backward(predicted_batch)
-                    predicted_batch = np.array([self.h_activation(x) for x in predicted_batch])
-
-
-    # #? Error derivatives
-    # errors_o_d = [[(p - t) for p, t in zip(act_o[i], targets[i])] for i in range(len(act_o))]
-    # w_h_o_T = list(zip(*w_h_o))
-
-                
-
+        pass
+    
+    @abstractmethod
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        '''
+            Predict the output of the neural network model.
+            Parameters:
+                - x: np.ndarray
+                    The input data to the neural network.
+            Returns:
+                - np.ndarray
+                    The output of the neural network model.
+        '''
+        pass
