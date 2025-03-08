@@ -24,8 +24,10 @@ class Layer(ABC):
             None
     '''
 
-    def __init__(self, num_neurons: int, num_inputs: int, activation_function: callable,
-                 activation_function_derivative: callable, learning_rate: float,
+    def __init__(self, num_neurons: int, num_inputs: int,
+                 activation_function: callable,
+                 activation_function_derivative: callable,
+                 learning_rate: float,
                  is_output_layer: bool = False
                  ) -> None:
         self.num_neurons = num_neurons
@@ -42,7 +44,7 @@ class Layer(ABC):
         pass
 
     @abstractmethod
-    def backward(self, grad_output: np.ndarray) -> np.ndarray:
+    def backward() -> np.ndarray:
         pass
 
 
@@ -65,7 +67,8 @@ class NeuralNetwork(ABC):
             - epochs: int
                 The number of epochs to train the neural network.
             - layer_type: Layer
-                The type of layer to use in the neural network it should inherit from the Layer class.
+                The type of layer to use in the neural
+                network it should inherit from the Layer class.
             - h_activation: str
                 The activation function for the hidden layers.
             - o_activation: str
@@ -91,19 +94,27 @@ class NeuralNetwork(ABC):
         self.batch_size = batch_size
         self.epochs = epochs
         self.layers = []
-        self.h_activation, self.h_activation_derivative = activation_functions[h_activation]
-        self.o_activation, self.o_activation_derivative = activation_functions[o_activation]
+        self.h_activation, \
+            self.h_activation_derivative = activation_functions[h_activation]
+        self.o_activation, \
+            self.o_activation_derivative = activation_functions[o_activation]
         self.loss = loss
 
         for i in range(num_hidden_layers):
             if i == 0:
                 self.layers.append(layer_type(
-                    num_neurons_hidden, input_size, self.h_activation, self.h_activation_derivative, learning_rate))
+                    num_neurons_hidden, input_size, self.h_activation,
+                    self.h_activation_derivative,
+                    learning_rate))
             else:
                 self.layers.append(layer_type(
-                    num_neurons_hidden, num_neurons_hidden, self.h_activation, self.h_activation_derivative, learning_rate))
+                    num_neurons_hidden, num_neurons_hidden,
+                    self.h_activation, self.h_activation_derivative,
+                    learning_rate))
         self.layers.append(layer_type(
-            output_size, num_neurons_hidden, self.o_activation, self.o_activation_derivative, learning_rate, is_output_layer=True))
+            output_size, num_neurons_hidden, self.o_activation,
+            self.o_activation_derivative,
+            learning_rate, is_output_layer=True))
 
     @abstractmethod
     def train(self, x: np.ndarray, y: np.ndarray) -> None:
@@ -118,7 +129,7 @@ class NeuralNetwork(ABC):
                 None
         '''
         pass
-    
+
     @abstractmethod
     def predict(self, x: np.ndarray) -> np.ndarray:
         '''
