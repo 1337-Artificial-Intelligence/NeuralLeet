@@ -56,3 +56,6 @@ predicted_classes = np.argmax(predictions, axis=0)
 expected_classes = np.argmax(target_t, axis=0)
 
 print("Accuracy:", np.mean(predicted_classes == expected_classes) * 100, "%")
+
+# to run this code, run the following command in the terminal in the root directory of the project:
+# python -m examples.main
