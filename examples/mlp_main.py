@@ -1,6 +1,5 @@
 
 from NeuralLeet.nn.mlp import Mlp
-
 import numpy as np
 from NeuralLeet.core.functional import LossFunction, ActivationFunction, sigmoid, sigmoid_derivative, cross_entropy_loss, cross_entropy_derivative
 
