@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "NeuralLeet"
+version = "0.1.0"
+description = "A neural network library for machine learning tasks"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "1337AI", email = "contact@1337ai.org"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+]
+dependencies = [
+    "numpy >= 2.0.2",
+    "pycodestyle == 2.12.1"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/yourusername/NeuralLeet"
+"Bug Tracker" = "https://github.com/yourusername/NeuralLeet/issues"
+
+[tool.setuptools]
+packages = ["NeuralLeet"]
+
+[tool.setuptools.package-data]
+NeuralLeet = ["*.txt", "*.md"]
